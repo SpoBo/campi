@@ -7,19 +7,21 @@ function Camera() {}
 
 var opts = new Options();
 
-var raspistill = function(options) {
+var raspistill = function(options, callback) {
     var args = opts.process(options);
 
-    var child = spawn('raspistill', args.concat(['-o',  '-']));
+    var child = spawn('raspistill', args.concat(['-o',  '-'])
+        .on('error', function(error) {
+            callback(error);
+        }));
 
     var stream = new Stream();
-
     child.stderr.on('data', stream.emit.bind(stream, 'error'));
     child.stdout.on('data', stream.emit.bind(stream, 'data'));
     child.stdout.on('end', stream.emit.bind(stream, 'end'));
     child.on('error', stream.emit.bind(stream, 'error'));
 
-    return stream;
+    callback(null, stream);
 };
 
 Camera.prototype.getImageAsStream = function (options, callback) {
@@ -28,7 +30,7 @@ Camera.prototype.getImageAsStream = function (options, callback) {
             callback('Option property should be an object, or null');
         }
 
-        callback(null, raspistill(options));
+        raspistill(options, callback);
     } catch (error) {
         callback(error);
     }
