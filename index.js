@@ -46,10 +46,21 @@ Camera.prototype.getImageAsFile = function (options, filename, callback) {
             callback('filename property should be a string');
         }
 
-        var stream = raspistill(options).pipe(fs.createWriteStream(filename));
+        raspistill(options, function(err, stream) {
+            if (err) {
+                callback(err);
+                return;
+            }
 
-        stream.on('finish', function() {
-            callback(null);
+            stream.on('finish', function() {
+                callback(null);
+            });
+
+            stream.on('error', function(e) {
+                callback(e);
+            });
+
+            stream.pipe(fs.createWriteStream(filename));
         });
     } catch (error) {
         callback(error);
