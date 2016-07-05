@@ -10,10 +10,10 @@ var opts = new Options();
 var raspistill = function(options, callback) {
     var args = opts.process(options);
 
-    var child = spawn('raspistill', args.concat(['-o',  '-'])
+    var child = spawn('raspistill', args.concat(['-o',  '-']))
         .on('error', function(error) {
             callback(error);
-        }));
+        });
 
     var stream = new Stream();
     child.stderr.on('data', stream.emit.bind(stream, 'error'));
